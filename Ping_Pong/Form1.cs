@@ -60,11 +60,10 @@ namespace Ping_Pong
             int centreBalle = balle.Y + balle.Height / 2;
             int tiers = r.Height / 3;
 
-            if (centreBalle < r.Y + tiers) sensV = 1;           // haut -> monte
-            else if (centreBalle > r.Bottom - tiers) sensV = 2; // bas -> descend
-            // milieu : la direction verticale ne change pas
+            if (centreBalle < r.Y + tiers) sensV = 1;
+            else if (centreBalle > r.Bottom - tiers) sensV = 2;
 
-            if (vBalle < 5) vBalle++;   // accélère à chaque frappe
+            if (vBalle < 5) vBalle++;
         }
 
         void Form1_KeyDown(object? sender, KeyEventArgs e)
@@ -74,7 +73,6 @@ namespace Ping_Pong
             if (e.KeyCode == Keys.Up || e.KeyCode == Keys.O) j2Haut = true;
             if (e.KeyCode == Keys.Down || e.KeyCode == Keys.L) j2Bas = true;
 
-            // Rejouer quand la partie est finie
             if (e.KeyCode == Keys.Space && !timer.Enabled)
             {
                 Initialiser();
@@ -93,37 +91,31 @@ namespace Ping_Pong
 
         private void Timer_Tick(object? sender, EventArgs e)
         {
-            // Déplacement des raquettes
             if (j1Haut && rj1.Y > 0) rj1.Y -= vr;
             if (j1Bas && rj1.Bottom < zoneJeu.Height) rj1.Y += vr;
             if (j2Haut && rj2.Y > 0) rj2.Y -= vr;
             if (j2Bas && rj2.Bottom < zoneJeu.Height) rj2.Y += vr;
 
-            // Déplacement de la balle (CORRIGÉ : +vBalle)
             balle.X += (sensH == 1) ? -vBalle : vBalle;
             balle.Y += (sensV == 1) ? -vBalle : vBalle;
 
-            // Haut / bas de la zone de jeu
             if (balle.Y <= 0) sensV = 2;
             if (balle.Y >= 196) sensV = 1;
 
-            // Collision avec la raquette du joueur 1
             if (sensH == 1 && balle.IntersectsWith(rj1))
             {
                 sensH = 2;
-                balle.X = rj1.Right;                 // sort de la raquette
+                balle.X = rj1.Right;
                 EffetRaquette(rj1);
             }
 
-            // Collision avec la raquette du joueur 2
             if (sensH == 2 && balle.IntersectsWith(rj2))
             {
                 sensH = 1;
-                balle.X = rj2.X - balle.Width;       // sort de la raquette
+                balle.X = rj2.X - balle.Width;
                 EffetRaquette(rj2);
             }
 
-            // Côté gauche -> point pour J2
             if (balle.X <= 0)
             {
                 sj2++;
@@ -131,7 +123,6 @@ namespace Ping_Pong
                 sensH = 1;
             }
 
-            // Côté droit -> point pour J1
             if (balle.X >= 196)
             {
                 sj1++;
@@ -139,13 +130,12 @@ namespace Ping_Pong
                 sensH = 2;
             }
 
-            // Fin de partie
-            if (sj1 >= 3 || sj2 >= 3)
+            if (sj1 >= 5 || sj2 >= 5)
             {
                 timer.Stop();
                 Invalidate();
-                Update();   // affiche le score final avant le message
-                MessageBox.Show((sj1 >= 3 ? "Joueur 1 gagne !" : "Joueur 2 gagne !")
+                Update();
+                MessageBox.Show((sj1 >= 5 ? "Joueur 1 gagne !" : "Joueur 2 gagne !")
                     + "\nAppuyez sur Espace pour rejouer.");
                 return;
             }
@@ -164,18 +154,15 @@ namespace Ping_Pong
             float offsetX = (ClientSize.Width - zoneJeu.Width * scale) / 2f;
             float offsetY = (ClientSize.Height - zoneJeu.Height * scale) / 2f;
 
-            // Bord de la zone de jeu
             e.Graphics.DrawRectangle(Pens.Gray,
                 offsetX, offsetY, zoneJeu.Width * scale, zoneJeu.Height * scale);
 
-            // Ligne centrale en pointillés
             using (var pen = new Pen(Color.Gray) { DashStyle = System.Drawing.Drawing2D.DashStyle.Dash })
             {
                 float milieu = offsetX + zoneJeu.Width * scale / 2f;
                 e.Graphics.DrawLine(pen, milieu, offsetY, milieu, offsetY + zoneJeu.Height * scale);
             }
 
-            // Raquettes
             e.Graphics.FillRectangle(Brushes.White,
                 offsetX + rj1.X * scale, offsetY + rj1.Y * scale,
                 rj1.Width * scale, rj1.Height * scale);
@@ -184,12 +171,10 @@ namespace Ping_Pong
                 offsetX + rj2.X * scale, offsetY + rj2.Y * scale,
                 rj2.Width * scale, rj2.Height * scale);
 
-            // Balle
             e.Graphics.FillRectangle(Brushes.Yellow,
                 offsetX + balle.X * scale, offsetY + balle.Y * scale,
                 balle.Width * scale, balle.Height * scale);
 
-            // Compteur de points
             using (var font = new Font("Consolas", 28, FontStyle.Bold))
             using (var sf = new StringFormat { Alignment = StringAlignment.Center })
             {
